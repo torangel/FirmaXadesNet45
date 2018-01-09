@@ -34,7 +34,7 @@ namespace FirmaXadesNet.Signature.Parameters
     {
         #region Private variables
 
-        private DigestMethod _defaultPolicyDigestAlgorithm = DigestMethod.SHA1;
+        private DigestMethod _defaultPolicyDigestAlgorithm = DigestMethod.SHA256;
 
         #endregion
 
