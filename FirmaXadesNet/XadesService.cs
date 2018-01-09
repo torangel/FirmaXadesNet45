@@ -835,6 +835,17 @@ namespace FirmaXadesNet
                 signedDataObjectProperties.DataObjectFormatCollection.Add(newDataObjectFormat);
             }
 
+            //http://signatures-conformance-checker.etsi.org/protected/XAdESConf/TestCases/
+            //Location-{CodeTest}:SignedDataObjectProperties-{CheckIfDOFsPointToAllReferencesToSignedObjects}
+            DataObjectFormat dformat = new DataObjectFormat();
+
+            dformat.MimeType = _dataFormat.MimeType;
+            dformat.Encoding = _dataFormat.Encoding;
+            dformat.Description = _dataFormat.Description;
+            dformat.ObjectReferenceAttribute = "#" + "ReferenceKeyInfo";
+            signedDataObjectProperties.DataObjectFormatCollection.Add(dformat);
+            
+
             if (parameters.SignerRole != null &&
                 (parameters.SignerRole.CertifiedRoles.Count > 0 || parameters.SignerRole.ClaimedRoles.Count > 0))
             {
