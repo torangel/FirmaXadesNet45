@@ -25,11 +25,16 @@ using System;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
+using System.Threading.Tasks;
+using Microsoft.Xades;
 
 namespace FirmaXadesNet.Crypto
 {
+   
     public class Signer : IDisposable
     {
+        private readonly IWrapAHsm _hsmWrapper;
+
         #region Private variables
 
         private bool _disposeCryptoProvider;
@@ -44,7 +49,7 @@ namespace FirmaXadesNet.Crypto
         {
             get
             {
-                return _signingCertificate;
+                return HsmWrapper.GetPublicKey();
             }
         }
 
@@ -56,26 +61,38 @@ namespace FirmaXadesNet.Crypto
             }
         }
 
+        public IWrapAHsm HsmWrapper
+        {
+            get { return _hsmWrapper; }
+        }
+
         #endregion
 
         #region Constructors
 
-        public Signer(X509Certificate2 certificate)
+        public Signer(IWrapAHsm hsmWrapper)
         {
-            if (certificate == null)
-            {
-                throw new ArgumentNullException("certificate");
-            }
-            
-            if (!certificate.HasPrivateKey)
-            {
-                throw new Exception("El certificado no contiene ninguna clave privada");
-            }
-
-            _signingCertificate = certificate;
-
-            SetSigningKey(_signingCertificate);
+            _hsmWrapper = hsmWrapper;
         }
+     
+
+        //public Signer(X509Certificate2 certificate)
+        //{
+            
+        //    if (certificate == null)
+        //    {
+        //        throw new ArgumentNullException("certificate");
+        //    }
+
+        //    if (!certificate.HasPrivateKey)
+        //    {
+        //        throw new Exception("El certificado no contiene ninguna clave privada");
+        //    }
+
+        //    _signingCertificate = certificate;
+
+        //    SetSigningKey(_signingCertificate);
+        //}
 
         #endregion
 
@@ -111,7 +128,7 @@ namespace FirmaXadesNet.Crypto
                 cspparams.KeyNumber = parameters.KeyNumber;
                 cspparams.Flags = parameters.Flags;
                 _signingKey = new RSACryptoServiceProvider(cspparams);
-
+               
                 _disposeCryptoProvider = true;
             }
             else

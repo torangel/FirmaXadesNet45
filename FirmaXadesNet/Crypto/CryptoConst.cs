@@ -23,7 +23,7 @@
 
 namespace FirmaXadesNet.Crypto
 {
-    class CryptoConst
+    public class CryptoConst
     {
         public const string MS_DEF_PROV = "Microsoft Base Cryptographic Provider v1.0";
         public const string MS_ENHANCED_PROV = "Microsoft Enhanced Cryptographic Provider v1.0";

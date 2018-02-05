@@ -25,6 +25,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Globalization;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Security.Cryptography;
 using System.Security.Cryptography.X509Certificates;
@@ -32,8 +33,15 @@ using System.Security.Cryptography.Xml;
 using System.Xml;
 using System.Xml.Schema;
 
+
 namespace Microsoft.Xades
 {
+    public interface IWrapAHsm
+    {
+        X509Certificate2 GetPublicKey();
+        Byte[] SignBytes(SignatureDescription signatureDescription, byte[] bytesToSign);
+    }
+
     /// <summary>
     /// Types of signature standards that can be contained in XadesSignedXml class instance
     /// </summary>
@@ -189,7 +197,7 @@ namespace Microsoft.Xades
         #endregion
 
         #region Public properties
-
+        public IWrapAHsm HsmWrapper { get; set; }
         public static string XmlDSigPrefix { get; set; }
 
         public static string XmlXadesPrefix { get; set; }
@@ -1465,12 +1473,13 @@ namespace Microsoft.Xades
             this.BuildDigestedReferences();
 
             AsymmetricAlgorithm signingKey = this.SigningKey;
-            if (signingKey == null)
-            {
-                throw new CryptographicException("Cryptography_Xml_LoadKeyFailed");
-            }
+            
             if (this.SignedInfo.SignatureMethod == null)
             {
+                if (signingKey == null)
+                {
+                    throw new CryptographicException("Cryptography_Xml_LoadKeyFailed");
+                }
                 if (!(signingKey is DSA))
                 {
                     if (!(signingKey is RSA))
@@ -1502,7 +1511,16 @@ namespace Microsoft.Xades
             //this.GetC14NDigest(hash);
             byte[] hashValue = this.GetC14NDigest(hash, "ds");
 
-            this.m_signature.SignatureValue = description.CreateFormatter(signingKey).CreateSignature(hash);
+            //===================
+            byte[] signed = null;
+            signed = HsmWrapper.SignBytes(description, hashValue);
+           
+            this.m_signature.SignatureValue = signed;
+
+
+            //===================
+
+            //  this.m_signature.SignatureValue = description.CreateFormatter(signingKey).CreateSignature(hash);
         }
 
         public Reference GetContentReference()

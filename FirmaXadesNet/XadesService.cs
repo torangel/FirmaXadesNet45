@@ -255,6 +255,7 @@ namespace FirmaXadesNet
             SetSignatureId(counterSignature);
 
             counterSignature.SigningKey = parameters.Signer.SigningKey;
+            counterSignature.HsmWrapper = parameters.Signer.HsmWrapper;
 
             _refContent = new Reference();
             _refContent.Uri = "#" + sigDocument.XadesSignature.SignatureValueId;
@@ -269,8 +270,10 @@ namespace FirmaXadesNet
 
             KeyInfo keyInfo = new KeyInfo();
             keyInfo.Id = "KeyInfoId-" + counterSignature.Signature.Id;
-            keyInfo.AddClause(new KeyInfoX509Data((X509Certificate)parameters.Signer.Certificate));
-            keyInfo.AddClause(new RSAKeyValue((RSA)parameters.Signer.SigningKey));
+            var signerCertificate = parameters.Signer.Certificate;
+            var rsapublicKey = signerCertificate.GetRSAPublicKey();
+            keyInfo.AddClause(new KeyInfoX509Data((X509Certificate)signerCertificate));
+            keyInfo.AddClause(new RSAKeyValue((RSA)rsapublicKey));
             counterSignature.KeyInfo = keyInfo;
 
             Reference referenceKeyInfo = new Reference();
@@ -764,12 +767,15 @@ namespace FirmaXadesNet
         private void AddCertificateInfo(SignatureDocument sigDocument, SignatureParameters parameters)
         {
             sigDocument.XadesSignature.SigningKey = parameters.Signer.SigningKey;
-
+            sigDocument.XadesSignature.HsmWrapper = parameters.Signer.HsmWrapper;
             KeyInfo keyInfo = new KeyInfo();
             keyInfo.Id = "KeyInfoId-" + sigDocument.XadesSignature.Signature.Id;
-            keyInfo.AddClause(new KeyInfoX509Data((X509Certificate)parameters.Signer.Certificate));
-            keyInfo.AddClause(new RSAKeyValue((RSA)parameters.Signer.SigningKey));
+            var signerCertificate = parameters.Signer.Certificate;
+            var rsapublicKey = signerCertificate.GetRSAPublicKey();
+            keyInfo.AddClause(new KeyInfoX509Data((X509Certificate)signerCertificate));
+            keyInfo.AddClause(new RSAKeyValue((RSA) rsapublicKey));
 
+           
             sigDocument.XadesSignature.KeyInfo = keyInfo;
 
             Reference reference = new Reference();
